@@ -1,0 +1,19 @@
+{
+  "currency": "INR",
+  "rates": {
+    "bw_single": { "rate": 2.0, "label": "Black & White (Single-sided)" },
+    "bw_double": { "rate": 1.5, "label": "Black & White (Double-sided)" },
+    "color_single": { "rate": 8.0, "label": "Color (Single-sided)" },
+    "color_double": { "rate": 6.0, "label": "Color (Double-sided)" }
+  },
+  "paperSizes": {
+    "A4": { "multiplier": 1.0, "label": "A4 Standard" },
+    "A3": { "multiplier": 2.0, "label": "A3 Large / CAD" }
+  },
+  "finishing": {
+    "none": { "price": 0.0, "label": "No Binding (Loose sheets)" },
+    "staple": { "price": 0.0, "label": "Corner Staple (Free)" },
+    "spiral": { "price": 25.0, "label": "Spiral Binding (Cover + Coil)" },
+    "strip": { "price": 10.0, "label": "Soft Corner Clip File" }
+  }
+}

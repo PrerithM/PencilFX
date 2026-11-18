@@ -1,0 +1,23 @@
+[
+  {
+    "notificationId": "notif-1",
+    "orderId": "PFX-2026-90412",
+    "message": "Order PFX-2026-90412 is READY_FOR_PICKUP at the front counter.",
+    "notificationType": "ORDER_STATUS",
+    "createdAt": "2026-11-18T09:45:00.000Z"
+  },
+  {
+    "notificationId": "notif-2",
+    "orderId": "PFX-2026-90428",
+    "message": "Order PFX-2026-90428 is now PRINTING. Estimated ready: 11:25 AM.",
+    "notificationType": "ORDER_STATUS",
+    "createdAt": "2026-11-18T10:20:00.000Z"
+  },
+  {
+    "notificationId": "notif-3",
+    "orderId": null,
+    "message": "Notice: Engineering Physics and Chemistry practical record sheets restocked.",
+    "notificationType": "ANNOUNCEMENT",
+    "createdAt": "2026-11-18T08:30:00.000Z"
+  }
+]

@@ -1,0 +1,156 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Classmate Long Notebook (Ruled, 160 pgs)",
+    "category": "Notebooks",
+    "price": 65,
+    "inStock": true,
+    "stockCount": 45,
+    "unit": "1 pc",
+    "description": "Hard bound single line ruled long book, ideal for lecture notes.",
+    "image": "notebook-ruled.png"
+  },
+  {
+    "id": "prod-2",
+    "name": "Classmate Unruled Notebook (160 pgs)",
+    "category": "Notebooks",
+    "price": 65,
+    "inStock": true,
+    "stockCount": 30,
+    "unit": "1 pc",
+    "description": "Blank unruled white page long notebook for diagrams and rough work.",
+    "image": "notebook-unruled.png"
+  },
+  {
+    "id": "prod-3",
+    "name": "A4 Spiral Project Notebook (200 pgs)",
+    "category": "Notebooks",
+    "price": 110,
+    "inStock": true,
+    "stockCount": 22,
+    "unit": "1 pc",
+    "description": "Micro-perforated spiral notebook with thick 70 GSM paper.",
+    "image": "notebook-spiral.png"
+  },
+  {
+    "id": "prod-4",
+    "name": "Reynolds 045 Fine Carabine Pen (Blue)",
+    "category": "Pens & Writing",
+    "price": 10,
+    "inStock": true,
+    "stockCount": 120,
+    "unit": "1 pen",
+    "description": "Classic blue ballpoint pen with laser tip precision.",
+    "image": "pen-reynolds.png"
+  },
+  {
+    "id": "prod-5",
+    "name": "Pilot V5 Liquid Ink Rollerball (Black)",
+    "category": "Pens & Writing",
+    "price": 60,
+    "inStock": true,
+    "stockCount": 35,
+    "unit": "1 pen",
+    "description": "Precision 0.5mm needle point black ink rollerball pen.",
+    "image": "pen-pilot.png"
+  },
+  {
+    "id": "prod-6",
+    "name": "Hauser XO Ball Pen Set (Pack of 5)",
+    "category": "Pens & Writing",
+    "price": 50,
+    "inStock": true,
+    "stockCount": 40,
+    "unit": "Pack",
+    "description": "Ultra-smooth German ink technology ballpoint pens.",
+    "image": "pen-hauser.png"
+  },
+  {
+    "id": "prod-7",
+    "name": "Practical Record Sheets (Pack of 50)",
+    "category": "Lab & Records",
+    "price": 45,
+    "inStock": true,
+    "stockCount": 60,
+    "unit": "Pack",
+    "description": "One side ruled, one side blank standard college record sheets.",
+    "image": "record-sheets.png"
+  },
+  {
+    "id": "prod-8",
+    "name": "Engineering Graph Sheets A4 (Pack of 25)",
+    "category": "Lab & Records",
+    "price": 30,
+    "inStock": true,
+    "stockCount": 50,
+    "unit": "Pack",
+    "description": "Centimeter grid millimeter precision green graph sheets.",
+    "image": "graph-sheets.png"
+  },
+  {
+    "id": "prod-9",
+    "name": "Observation Notebook (100 pgs)",
+    "category": "Lab & Records",
+    "price": 40,
+    "inStock": true,
+    "stockCount": 15,
+    "unit": "1 pc",
+    "description": "Compact spiral bound record book for lab readings and notes.",
+    "image": "observation-book.png"
+  },
+  {
+    "id": "prod-10",
+    "name": "Omega Engineering Mini Drafter",
+    "category": "Drafting & Tools",
+    "price": 380,
+    "inStock": true,
+    "stockCount": 8,
+    "unit": "1 set",
+    "description": "Includes unbreakable scale and heavy-duty steel clamp.",
+    "image": "mini-drafter.png"
+  },
+  {
+    "id": "prod-11",
+    "name": "Cartridge Paper Sheet A1 (White)",
+    "category": "Drafting & Tools",
+    "price": 20,
+    "inStock": true,
+    "stockCount": 100,
+    "unit": "1 sheet",
+    "description": "180 GSM smooth cartridge paper for technical drawing.",
+    "image": "cartridge-sheet.png"
+  },
+  {
+    "id": "prod-12",
+    "name": "Apsara Drawing Pencil Set (2B, 4B, 6B, 8B)",
+    "category": "Drafting & Tools",
+    "price": 45,
+    "inStock": true,
+    "stockCount": 25,
+    "unit": "1 pack",
+    "description": "Grades 2B to 8B premium lead pencils for technical sketches.",
+    "image": "pencils.png"
+  },
+  {
+    "id": "prod-13",
+    "name": "Camlin Geometry Box (Exam Kit)",
+    "category": "Exam Supplies",
+    "price": 120,
+    "inStock": true,
+    "stockCount": 18,
+    "unit": "1 box",
+    "description": "Self-centering compass, divider, 15cm ruler, and set squares.",
+    "image": "geometry-box.png"
+  },
+  {
+    "id": "prod-14",
+    "name": "Kangaroo Heavy Duty Stapler + Pins",
+    "category": "Office Supplies",
+    "price": 85,
+    "inStock": false,
+    "stockCount": 0,
+    "unit": "1 kit",
+    "description": "No. 10 stapler with 1000 staples pack (Currently out of stock).",
+    "image": "stapler.png"
+  }
+]

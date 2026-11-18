@@ -1,0 +1,13 @@
+{
+  "shopName": "Campus Stationery & Reprographics",
+  "brandName": "Pencil FX",
+  "openingHours": "8:30 AM - 5:30 PM (Mon-Sat)",
+  "contactEmail": "stationery@campus.edu",
+  "contactPhone": "+91 98765 43210",
+  "counterLocation": "Ground Floor, Student Activity Center (SAC)",
+  "defaultPreparationTimeMinutes": 20,
+  "currency": "₹",
+  "syncIntervalSeconds": 25,
+  "adminDemoPin": "1234",
+  "sessionExpiryMinutes": 30
+}

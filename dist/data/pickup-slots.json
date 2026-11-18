@@ -1,0 +1,52 @@
+[
+  {
+    "id": "slot-1",
+    "startTime": "09:15",
+    "endTime": "09:30",
+    "label": "09:15 AM – 09:30 AM (Pre-Class)",
+    "capacity": 30,
+    "currentBookings": 12,
+    "isEnabled": true,
+    "description": "Quick pickup before 1st hour classes begin."
+  },
+  {
+    "id": "slot-2",
+    "startTime": "11:15",
+    "endTime": "11:35",
+    "label": "11:15 AM – 11:35 AM (Morning Tea Break)",
+    "capacity": 50,
+    "currentBookings": 38,
+    "isEnabled": true,
+    "description": "Standard 20-minute interval pickup slot."
+  },
+  {
+    "id": "slot-3",
+    "startTime": "13:15",
+    "endTime": "14:00",
+    "label": "01:15 PM – 02:00 PM (Lunch Break)",
+    "capacity": 60,
+    "currentBookings": 49,
+    "isEnabled": true,
+    "description": "Lunch break collection window."
+  },
+  {
+    "id": "slot-4",
+    "startTime": "15:45",
+    "endTime": "16:05",
+    "label": "03:45 PM – 04:05 PM (Afternoon Lab Break)",
+    "capacity": 40,
+    "currentBookings": 39,
+    "isEnabled": true,
+    "description": "High demand pre-lab printout pickup slot."
+  },
+  {
+    "id": "slot-5",
+    "startTime": "17:00",
+    "endTime": "17:30",
+    "label": "05:00 PM – 05:30 PM (Post-Class / Evening)",
+    "capacity": 35,
+    "currentBookings": 35,
+    "isEnabled": false,
+    "description": "Capacity reached for today."
+  }
+]

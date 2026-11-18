@@ -1,0 +1,181 @@
+name: Process New Orders
+
+on:
+  issues:
+    types: [opened]
+
+concurrency:
+  group: pencilfx-database-lock
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  process-new-order:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Process Order & Update Database
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const issue = context.payload.issue;
+            const issueBody = issue.body || '';
+            const labels = (issue.labels || []).map(l => typeof l === 'string' ? l : l.name);
+
+            // Only process if issue has 'new-order' label or title contains [Order]
+            if (!labels.includes('new-order') && !issue.title.includes('[Order]')) {
+              console.log('Issue is not a Pencil FX order, skipping.');
+              return;
+            }
+
+            const ordersPath = path.join(process.env.GITHUB_WORKSPACE, 'data', 'orders.json');
+            const slotsPath = path.join(process.env.GITHUB_WORKSPACE, 'data', 'pickup-slots.json');
+            const notifsPath = path.join(process.env.GITHUB_WORKSPACE, 'data', 'notifications.json');
+
+            // 1. Parse JSON payload from Issue body
+            const jsonMatch = issueBody.match(/```json\s*([\s\S]*?)\s*```/);
+            let payload = null;
+
+            if (jsonMatch && jsonMatch[1]) {
+              try {
+                payload = JSON.parse(jsonMatch[1]);
+              } catch (e) {
+                console.error('Error parsing JSON from markdown block:', e);
+              }
+            }
+
+            if (!payload || (!payload.orderId && !payload.id)) {
+              console.error('No valid JSON order payload found in issue body.');
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `⚠️ **Pencil FX Bot Notice**: Could not parse structured order payload. The counter staff will manually review this issue.`
+              });
+              return;
+            }
+
+            const orderId = payload.orderId || payload.id;
+
+            // 2. Load existing orders
+            let orders = [];
+            if (fs.existsSync(ordersPath)) {
+              try {
+                orders = JSON.parse(fs.readFileSync(ordersPath, 'utf8'));
+              } catch (e) {
+                console.error('Error parsing orders.json:', e);
+              }
+            }
+
+            // 3. Prevent duplicate order IDs or duplicate Issue numbers
+            const existingOrder = orders.find(o => (o.orderId === orderId) || (o.githubIssueNumber === issue.number));
+            if (existingOrder) {
+              console.log(`Order ${orderId} is already recorded.`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `ℹ️ **Pencil FX Notice**: Order \`${orderId}\` is already registered in the system.`
+              });
+              return;
+            }
+
+            // 4. Normalize order record
+            const now = new Date().toISOString();
+            const orderRecord = {
+              orderId: orderId,
+              trackingToken: payload.trackingToken || ('tok_' + Math.random().toString(16).substring(2, 14)),
+              studentId: payload.studentId || 'STU-UNKNOWN',
+              studentName: payload.studentName || 'Student',
+              usn: payload.usn || payload.studentUSN || undefined,
+              phone: payload.phone || undefined,
+              orderType: payload.orderType || (payload.printJobs?.length > 0 ? (payload.items?.length > 0 ? 'MIXED' : 'PRINT_ONLY') : 'STATIONERY'),
+              items: payload.items || [],
+              printJobs: payload.printJobs || [],
+              driveLinks: payload.driveLinks || (payload.printJobs?.flatMap(p => p.driveUrls) || []),
+              customNotes: payload.customNotes || payload.notes || undefined,
+              pricing: payload.pricing || {
+                stationerySubtotal: 0,
+                printSubtotal: 0,
+                totalAmount: payload.totalAmount || 0,
+                currency: 'INR'
+              },
+              pickupSlot: payload.pickupSlot || 'General Counter',
+              orderStatus: 'NEW',
+              createdAt: now,
+              updatedAt: now,
+              githubIssueNumber: issue.number
+            };
+
+            // 5. Append order
+            orders.unshift(orderRecord);
+            fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2) + '\n', 'utf8');
+
+            // 6. Update pickup slot capacity in pickup-slots.json
+            if (fs.existsSync(slotsPath)) {
+              try {
+                const slots = JSON.parse(fs.readFileSync(slotsPath, 'utf8'));
+                const matchedSlot = slots.find(s => s.label === orderRecord.pickupSlot || orderRecord.pickupSlot.includes(s.label));
+                if (matchedSlot) {
+                  matchedSlot.currentBookings = (matchedSlot.currentBookings || 0) + 1;
+                  if (matchedSlot.currentBookings >= matchedSlot.capacity) {
+                    matchedSlot.isEnabled = false;
+                  }
+                  fs.writeFileSync(slotsPath, JSON.stringify(slots, null, 2) + '\n', 'utf8');
+                }
+              } catch (err) {
+                console.warn('Could not update slot capacity:', err);
+              }
+            }
+
+            // 7. Append notification record
+            if (fs.existsSync(notifsPath)) {
+              try {
+                const notifs = JSON.parse(fs.readFileSync(notifsPath, 'utf8'));
+                notifs.unshift({
+                  notificationId: 'notif-' + Date.now(),
+                  orderId: orderRecord.orderId,
+                  message: `New order ${orderRecord.orderId} registered for ${orderRecord.pickupSlot}.`,
+                  notificationType: 'ORDER_STATUS',
+                  createdAt: now
+                });
+                fs.writeFileSync(notifsPath, JSON.stringify(notifs.slice(0, 50), null, 2) + '\n', 'utf8');
+              } catch (err) {
+                console.warn('Could not update notifications.json:', err);
+              }
+            }
+
+            // 8. Comment confirmation on Issue
+            const commentBody = `### ✅ Order Successfully Registered!
+Thank you **${orderRecord.studentName}**! Your order has been recorded into the campus database.
+
+- **Order ID**: \`${orderRecord.orderId}\`
+- **Private Tracking Token**: \`${orderRecord.trackingToken}\` *(keep this to track across devices)*
+- **Pickup Slot**: **${orderRecord.pickupSlot}**
+- **Total Amount**: **₹${orderRecord.pricing.totalAmount}** (Pay at Pickup)
+
+> 💡 **Notice**: Counter staff will batch-prepare orders before your scheduled slot. Check status in the portal anytime using your Order ID or tracking token.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: commentBody
+            });
+
+      - name: Commit and Push Database Updates
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/orders.json data/pickup-slots.json data/notifications.json
+          git diff --staged --quiet || (git commit -m "chore(database): record new order from issue #${{ github.event.issue.number }} [skip ci]" && git push)

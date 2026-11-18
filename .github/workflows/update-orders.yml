@@ -1,0 +1,138 @@
+name: Update Order Statuses
+
+on:
+  issues:
+    types: [labeled, unlabeled]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: pencilfx-database-lock
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  update-order-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Order Status & Notifications
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Prevent infinite loop if comment made by bot
+            if (context.payload.comment && context.payload.comment.user && context.payload.comment.user.type === 'Bot') {
+              console.log('Skipping bot comment.');
+              return;
+            }
+
+            const issue = context.payload.issue;
+            const issueLabels = (issue.labels || []).map(l => typeof l === 'string' ? l : l.name);
+            const ordersPath = path.join(process.env.GITHUB_WORKSPACE, 'data', 'orders.json');
+            const notifsPath = path.join(process.env.GITHUB_WORKSPACE, 'data', 'notifications.json');
+
+            if (!fs.existsSync(ordersPath)) return;
+
+            let orders = [];
+            try {
+              orders = JSON.parse(fs.readFileSync(ordersPath, 'utf8'));
+            } catch (e) {
+              console.error('Error reading orders.json:', e);
+              return;
+            }
+
+            const targetOrder = orders.find(o => o.githubIssueNumber === issue.number);
+            if (!targetOrder) {
+              console.log(`No order found matching issue #${issue.number}`);
+              return;
+            }
+
+            const validStatuses = [
+              'NEW',
+              'ACCEPTED',
+              'PREPARING',
+              'PRINTING',
+              'READY_FOR_PICKUP',
+              'COLLECTED',
+              'REJECTED',
+              'CANCELLED'
+            ];
+
+            let newStatus = null;
+
+            // Check if status command was written in a comment (e.g. "/status READY_FOR_PICKUP")
+            if (context.payload.comment && context.payload.comment.body) {
+              const commentText = context.payload.comment.body.trim();
+              const match = commentText.match(/^\/status\s+([A-Z_]+)/i);
+              if (match) {
+                const requested = match[1].toUpperCase();
+                if (validStatuses.includes(requested)) {
+                  newStatus = requested;
+                }
+              }
+            }
+
+            // Otherwise inspect current issue labels
+            if (!newStatus) {
+              for (const status of validStatuses) {
+                const labelKebab = status.toLowerCase().replace(/_/g, '-');
+                if (issueLabels.includes(labelKebab) || issueLabels.includes(status)) {
+                  newStatus = status;
+                  break;
+                }
+              }
+            }
+
+            if (!newStatus || targetOrder.orderStatus === newStatus) {
+              console.log('No status change required.');
+              return;
+            }
+
+            const previousStatus = targetOrder.orderStatus;
+            targetOrder.orderStatus = newStatus;
+            targetOrder.updatedAt = new Date().toISOString();
+
+            fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2) + '\n', 'utf8');
+            console.log(`Updated order ${targetOrder.orderId} status from ${previousStatus} to ${newStatus}`);
+
+            // Append status notification
+            if (fs.existsSync(notifsPath)) {
+              try {
+                const notifs = JSON.parse(fs.readFileSync(notifsPath, 'utf8'));
+                notifs.unshift({
+                  notificationId: 'notif-' + Date.now(),
+                  orderId: targetOrder.orderId,
+                  message: `Order ${targetOrder.orderId} status updated to ${newStatus}.`,
+                  notificationType: 'ORDER_STATUS',
+                  createdAt: targetOrder.updatedAt
+                });
+                fs.writeFileSync(notifsPath, JSON.stringify(notifs.slice(0, 50), null, 2) + '\n', 'utf8');
+              } catch (err) {
+                console.warn('Could not update notifications:', err);
+              }
+            }
+
+            // Post confirmation comment on the issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `🔄 **Status Update**: Order **${targetOrder.orderId}** status updated to \`${newStatus}\`. Updated in repository database.`
+            });
+
+      - name: Commit and Push Status Updates
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/orders.json data/notifications.json
+          git diff --staged --quiet || (git commit -m "chore(status): update order status from issue #${{ github.event.issue.number }} [skip ci]" && git push)
